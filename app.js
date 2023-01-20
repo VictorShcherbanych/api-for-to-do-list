@@ -25,6 +25,16 @@ app.get("/api/tasks/:id", async function(req, res){
     res.send(task.rows);
 });
 
+app.get("/api/users", async function(req, res){
+
+    const users = await db.query("SELECT * FROM tasks");
+    if (tasks.rowCount == 0) {
+        res.send('Завдання відсутні');
+    } else {res.send(tasks.rows);
+        console.log(tasks.rows)
+    }
+});
+
 app.post("/api/tasks", jsonParser, async function (req, res) {
       
     if(!req.body) return res.sendStatus(400);
@@ -36,6 +46,19 @@ app.post("/api/tasks", jsonParser, async function (req, res) {
     const newTask = await db.query("INSERT INTO tasks(name, descriptions, deadlines, prioritys) values($1, $2, $3, $4) RETURNING *", [taskName, taskDescription, taskDeadline, taskPriority]);
     // const id = Math.max.apply(Math,users.map(function(o){return o.id;}))
     res.send(newTask);
+});
+
+app.post("/api/creataccount", jsonParser, async function (req, res) {
+      
+    if(!req.body) return res.sendStatus(400);
+    const userName = req.body.name;
+    const userLastname = req.body.lastname;
+    const userLogin = req.body.login;
+    const userPassword = req.body.password;
+    console.log(userPassword)
+    const newUser = await db.query("INSERT INTO users(name, lastname, login, password) values($1, $2, $3, $4) RETURNING *", [userName, userLastname, userLogin, userPassword]);
+    // const id = Math.max.apply(Math,users.map(function(o){return o.id;}))
+    res.send(newUser.rows);
 });
 
 app.patch('/api/tasks/:id', async function (req, res){
