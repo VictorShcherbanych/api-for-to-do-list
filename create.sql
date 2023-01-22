@@ -16,6 +16,6 @@ create TABLE users(
     lastname TEXT,
     token TEXT
 );
-ALTER TABLE tasks ADD COLUMN done boolean
+
 
 
