@@ -1,11 +1,21 @@
 create TABLE tasks(
     id SERIAL PRIMARY KEY,
     name VARCHAR(50),
-)
+    done boolean,
+    descriptions TEXT,
+    deadlines DATE,
+    prioritys TEXT,
+    user_id TEXT
+);
+
+create TABLE users(
+    id SERIAL PRIMARY KEY,
+    login TEXT,
+    password TEXT,
+    name TEXT,
+    lastname TEXT,
+    token TEXT
+);
 ALTER TABLE tasks ADD COLUMN done boolean
-ALTER TABLE tasks ADD COLUMN descriptions TEXT
-ALTER TABLE tasks ADD COLUMN deadlines DATE
-ALTER TABLE tasks ADD COLUMN prioritys TEXT
-ALTER TABLE users ADD COLUMN login TEXT
-ALTER TABLE users ADD COLUMN password TEXT
+
 

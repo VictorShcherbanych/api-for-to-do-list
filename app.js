@@ -1,6 +1,8 @@
 const express = require("express");
 const db = require('./db');
-    
+const bcrypt = require('bcrypt');
+
+
 const app = express();
 const jsonParser = express.json();
   
@@ -25,15 +27,6 @@ app.get("/api/tasks/:id", async function(req, res){
     res.send(task.rows);
 });
 
-app.get("/api/users", async function(req, res){
-
-    const users = await db.query("SELECT * FROM tasks");
-    if (tasks.rowCount == 0) {
-        res.send('Завдання відсутні');
-    } else {res.send(tasks.rows);
-        console.log(tasks.rows)
-    }
-});
 
 app.post("/api/tasks", jsonParser, async function (req, res) {
       
@@ -48,17 +41,21 @@ app.post("/api/tasks", jsonParser, async function (req, res) {
     res.send(newTask);
 });
 
-app.post("/api/creataccount", jsonParser, async function (req, res) {
+app.post("/api/register", jsonParser, async function (req, res) {
       
     if(!req.body) return res.sendStatus(400);
     const userName = req.body.name;
     const userLastname = req.body.lastname;
     const userLogin = req.body.login;
     const userPassword = req.body.password;
-    console.log(userPassword)
-    const newUser = await db.query("INSERT INTO users(name, lastname, login, password) values($1, $2, $3, $4) RETURNING *", [userName, userLastname, userLogin, userPassword]);
+    const candidate = await db.query("SELECT * FROM users WHERE login = $1", [userLogin])
+    if (candidate){
+        return res.status(400).json({message: "Користувач уже зареєстрований"})
+    }
+    const hashPassword = await bcrypt.hash(userPassword, 7);
+    const newUser = await db.query("INSERT INTO users(name, lastname, login, password) values($1, $2, $3, $4) RETURNING *", [userName, userLastname, userLogin, hashPassword]);
     // const id = Math.max.apply(Math,users.map(function(o){return o.id;}))
-    res.send(newUser.rows);
+    res.json({message: `Користувача ${userName} ${userLastname} створено`});
 });
 
 app.patch('/api/tasks/:id', async function (req, res){
