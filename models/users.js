@@ -3,7 +3,7 @@ const db = require('../db');
 module.exports = {
     getTasks: async function getTasks (user_id, elements, offset) {
         try{
-            const tasks = await db.query("SELECT * FROM tasks WHERE user_id = $1 LIMIT $2 OFFSET $3", [user_id.id, elements, offset])
+            const tasks = await db.query("SELECT * FROM tasks WHERE user_id = $1 LIMIT $2 OFFSET $3", [user_id, elements, offset])
             return tasks.rows
         } catch (e) {
             console.log(e)
