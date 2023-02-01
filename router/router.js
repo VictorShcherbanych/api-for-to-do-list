@@ -3,7 +3,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
 const database = require('../models/users')
 const middleware = require('../middleware')
-const { check, validationResult } = require ('express-validator')
+const { check, validationResult } = require ('express-validator');
+const { application } = require('express');
 require('dotenv').config()
 const router = express();
 
@@ -46,7 +47,7 @@ router.post("/api/tasks", jsonParser, middleware, async function (req, res) {
 }
 });
 
-router.post("/api/register", jsonParser,[  
+router.post("/api/register", jsonParser, [  
     check('login', 'Поле логіну не може бути порожнім').notEmpty(),
     check('password', 'Пароль повинен мати від 4 до 12 символів').isLength({min:4, max:12})
     ], async function (req, res) {
@@ -100,7 +101,14 @@ router.patch('/api/tasks', jsonParser, middleware, async function (req, res){
         if (!req.body) return res.sendStatus(400);
         const userId = req.user.id
         const taskId = req.body.id;
-        res.json(await database.doneTask(userId, taskId));
+        let points = await database.getPoints(userId)
+        let newPoints = Number(points) + 10
+        if (points.rowCount === 0) {
+            newPoints = 10
+        }
+        const resPoints = await database.addPoints(String(newPoints), userId)
+        const task = await database.doneTask(userId, taskId)
+        res.json({resPoints, task});
     } catch (e) {
         console.log(e)
     }

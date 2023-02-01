@@ -14,6 +14,7 @@ create TABLE users(
     password TEXT,
     name TEXT,
     lastname TEXT,
+    points TEXT,
     token TEXT
 );
 

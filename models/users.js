@@ -34,6 +34,7 @@ module.exports = {
         } catch (e) {
             console.log(e)
         }
+
     },
     doneTask: async function doneTask (userId, taskId) {
         try{
@@ -43,6 +44,25 @@ module.exports = {
             console.log(e)
         }
     },
+
+    getPoints: async function addPoints (userId) {
+        try{
+            const getPoints = await db.query('Select points FROM users WHERE id = $1', [userId])
+            return (getPoints.rows[0].points)
+        } catch (e){
+            console.log(e)
+        }
+    },
+
+    addPoints: async function addPoints (points, userId) {
+        try{
+            const addPoints = await db.query('UPDATE users SET points = $1 WHERE id = $2  RETURNING *', [points, userId])
+            return (addPoints.rows[0].points)
+        } catch (e){
+            console.log(e)
+        }
+    },
+
     updateDescription: async function updateDescription (description, taskId, userId) {
         try{
             let updateDescription = await db.query('UPDATE tasks SET descriptions = $1 WHERE id = $2 AND user_id = $3 RETURNING *', [description, taskId, userId]);
@@ -51,6 +71,7 @@ module.exports = {
             console.log(e)
         }
     },
+
     deleteTask: async function deleteTask (taskId, userId) {
         try {
             const deleteTask = await db.query('DELETE FROM tasks WHERE id = $1 AND user_id = $2  RETURNING *' , [taskId, userId]);
