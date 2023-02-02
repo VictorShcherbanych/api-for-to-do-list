@@ -27,9 +27,9 @@ module.exports = {
         }
     },
 
-    createUser: async function createUser (userName, userLastname, userLogin, hashPassword) {
+    createUser: async function createUser (userName, userLastname, userLogin, hashPassword, lvl) {
         try{
-            const newUser = await db.query("INSERT INTO users(name, lastname, login, password) values($1, $2, $3, $4) RETURNING *", [userName, userLastname, userLogin, hashPassword]);
+            const newUser = await db.query("INSERT INTO users(name, lastname, login, password, lvl) values($1, $2, $3, $4, $5) RETURNING *", [userName, userLastname, userLogin, hashPassword, lvl]);
             return newUser.rows
         } catch (e) {
             console.log(e)
@@ -49,6 +49,24 @@ module.exports = {
         try{
             const getPoints = await db.query('Select points FROM users WHERE id = $1', [userId])
             return (getPoints.rows[0].points)
+        } catch (e){
+            console.log(e)
+        }
+    },
+
+    getLVL: async function getLVL (userId) {
+        try{
+            const getLvl = await db.query('Select lvl FROM users WHERE id = $1', [userId])
+            return (getLvl.rows[0].lvl)
+        } catch (e){
+            console.log(e)
+        }
+    },
+
+    newLVL: async function newLVL (lvl, userId) {
+        try{
+            const newlvl = await db.query('UPDATE users SET lvl = $1 WHERE id = $2 RETURNING *', [lvl, userId])
+            return (newlvl.rows[0].lvl)
         } catch (e){
             console.log(e)
         }

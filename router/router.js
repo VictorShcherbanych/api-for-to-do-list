@@ -5,6 +5,8 @@ const database = require('../models/users')
 const middleware = require('../middleware')
 const { check, validationResult } = require ('express-validator');
 const { application } = require('express');
+const { getPoints } = require('../models/users');
+const reward = require('../reward-system/rewards')
 require('dotenv').config()
 const router = express();
 
@@ -27,7 +29,10 @@ router.get("/api/tasks" ,jsonParser, middleware, async function(req, res){
         if (pageNumber){
             offset = Number(pageNumber)*elements-elements
         }
-        res.json(await database.getTasks(userId, elements, offset));
+        const tasks = await database.getTasks(userId, elements, offset)
+        const points = await database.getPoints(userId)
+        let lvl = await reward.getReward(userId)
+        res.json({tasks, points, lvl});
     } catch (e) {
         console.log(e)}
 });
@@ -52,10 +57,8 @@ router.post("/api/register", jsonParser, [
     check('password', 'Пароль повинен мати від 4 до 12 символів').isLength({min:4, max:12})
     ], async function (req, res) {
     try{    
-        console.log(req.body.login) 
         if(!req.body) return res.sendStatus(400);
         const errors = validationResult(req)
-        console.log(errors)
         if (!errors.isEmpty()) {
             return res.status(400).json({message: 'Помилка при реєстрації', errors})
         }
@@ -63,12 +66,13 @@ router.post("/api/register", jsonParser, [
         const userLastname = req.body.lastname;
         const userLogin = req.body.login;
         const userPassword = req.body.password;
+        const lvl = 0
         const candidate = await database.getUser(userLogin);
         if (!candidate.rowCount == 0){
             return res.status(400).json({message: "Користувач уже зареєстрований"})
         }
         const hashPassword = await bcrypt.hash(userPassword, 7);
-        await database.createUser(userName, userLastname, userLogin, hashPassword)
+        await database.createUser(userName, userLastname, userLogin, hashPassword, lvl)
         // const id = Math.max.apply(Math,users.map(function(o){return o.id;}))
         res.json({message: `Користувача ${userName} ${userLastname} створено`});
     } catch(e) {
@@ -102,13 +106,14 @@ router.patch('/api/tasks', jsonParser, middleware, async function (req, res){
         const userId = req.user.id
         const taskId = req.body.id;
         let points = await database.getPoints(userId)
-        let newPoints = Number(points) + 10
-        if (points.rowCount === 0) {
+        let newPoints = points + 10
+        if (points === null) {
             newPoints = 10
         }
         const resPoints = await database.addPoints(String(newPoints), userId)
         const task = await database.doneTask(userId, taskId)
-        res.json({resPoints, task});
+        let lvl = await reward.getReward(userId)
+        res.json({resPoints, lvl, task});
     } catch (e) {
         console.log(e)
     }

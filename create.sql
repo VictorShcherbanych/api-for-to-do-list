@@ -15,7 +15,8 @@ create TABLE users(
     name TEXT,
     lastname TEXT,
     points TEXT,
-    token TEXT
+    token INT,
+    lvl INT
 );
 
 
